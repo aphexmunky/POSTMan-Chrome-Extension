@@ -3145,7 +3145,7 @@ pm.layout = {
 
 pm.indexedDB = {
     onerror:function (event, callback) {
-        console.log("Somethign went wrong with indexedDB again!", event);
+        console.log("Something went wrong with indexedDB again!", event);
     },
 
     open_v21:function () {
