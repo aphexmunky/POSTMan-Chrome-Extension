@@ -987,6 +987,13 @@ li .right {
     width: 100%;
 }
 
+#environment-quicklook-collection-config {
+    border-top: solid thin #ccc;
+    margin-top: 5px;
+    padding-top: 5px;
+    width: 100%;
+}
+
 #environment-quicklook img {
     opacity: 0.5;
     width: 20px;
@@ -1004,6 +1011,11 @@ li .right {
 }
 
 #environment-selector {
+    float: left;
+    margin-left: 10px;
+}
+
+#collection-config-selector {
     float: left;
     margin-left: 10px;
 }
