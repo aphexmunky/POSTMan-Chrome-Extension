@@ -164,6 +164,7 @@ pm.init = function () {
     pm.helpers.init();
     pm.keymap.init();
     pm.envManager.init();
+    pm.configManager.init();
     pm.filesystem.init();
     pm.indexedDB.open();
     $(":input:first").focus();
@@ -3237,12 +3238,21 @@ pm.indexedDB = {
                 environmentsStore.createIndex("timestamp", "timestamp", { unique:false});
                 environmentsStore.createIndex("id", "id", { unique:false});
             }
+
+            /* TODO:
+            if (!db.objectStoreNames.contains("config")) {
+                var environmentsStore = db.createObjectStore("config", {keyPath:"id"});
+                environmentsStore.createIndex("timestamp", "timestamp", { unique:false});
+                environmentsStore.createIndex("id", "id", { unique:false});
+            }
+            */
         };
 
         request.onsuccess = function (e) {
             console.log("Success");
             pm.indexedDB.db = e.target.result;
             pm.history.getAllRequests();
+            pm.configManager.getAllConfigs();
             pm.envManager.getAllEnvironments();
         };
 
@@ -3596,6 +3606,43 @@ pm.indexedDB = {
         };
     },
 
+    // TODO: indexDB config
+    config:{
+        getAllConfigs:function (callback) {
+            var db = pm.indexedDB.db;
+            if (db == null) {
+                return;
+            }
+
+            var trans = db.transaction(["environments"], "readwrite");
+            var store = trans.objectStore("environments");
+
+            //Get everything in the store
+            var keyRange = IDBKeyRange.lowerBound(0);
+            var index = store.index("timestamp");
+            var cursorRequest = index.openCursor(keyRange);
+            var configs = [];
+
+            cursorRequest.onsuccess = function (e) {
+                var result = e.target.result;
+
+                if (!result) {
+                    callback(configs);
+                    return;
+                }
+
+                var request = result.value;
+                configs.push(request);
+
+                //This wil call onsuccess again and again until no more request is left
+                result['continue']();
+            };
+
+            cursorRequest.onerror = pm.indexedDB.onerror;
+        },
+
+    },
+
     environments:{
         addEnvironment:function (environment, callback) {
             var db = pm.indexedDB.db;
@@ -3695,6 +3742,51 @@ pm.indexedDB = {
     }
 };
 
+pm.configManager = {
+    configs:["first"],
+
+    init:function() {
+        $('#config-list').on("click", ".config-action-delete", function () {
+            var id = $(this).attr('data-id');
+            $('a[rel="tooltip"]').tooltip('hide');
+            pm.configManager.deleteEnvironment(id);
+        });
+
+        $('#collection-config-selector').on("click", ".config-list-item", function () {
+            var id = $(this).attr('data-id');
+            var selectedEnv = pm.envManager.getEnvironmentFromId(id);
+            pm.envManager.selectedEnv = selectedEnv;
+            pm.settings.set("selectedEnvironmentId", selectedEnv.id);
+            pm.envManager.quicklook.refreshEnvironment(selectedEnv);
+            $('#collection-config-selector .config-list-item-selected').html(selectedEnv.name);
+        });
+
+        $('#collection-config-selector').on("click", ".config-list-item-noenvironment", function () {
+            pm.envManager.selectedEnv = null;
+            pm.settings.set("selectedEnvironmentId", "");
+            pm.envManager.quicklook.removeEnvironmentData();
+            $('#collection-config-selector .collection-config-list-item-selected').html("No environment");
+        });
+
+    },
+
+    getAllConfigs:function() {
+        pm.indexedDB.config.getAllConfigs(function (configs) {
+            $('#collection-config-selector .dropdown-menu').html("");
+            $('#collection-config-list tbody').html("");
+            pm.configManager.configs = configs;
+
+
+            $('#collection-config-selector .dropdown-menu').append(Handlebars.templates.config_selector({"items":configs}));
+            $('#collection-config-list tbody').append(Handlebars.templates.config_list({"items":configs}));
+            $('#collection-config-selector .dropdown-menu').append(Handlebars.templates.config_selector_actions());
+
+            pm.envManager.selectedEnv = null;
+            $('#collection-config-selector .collection-config-list-item-selected').html("No confiig");
+        })
+    }
+}
+
 pm.envManager = {
     environments:[],
 
@@ -3772,6 +3864,7 @@ pm.envManager = {
         });
 
         $('#environment-selector').on("click", ".environment-list-item", function () {
+            alert("oooh");
             var id = $(this).attr('data-id');
             var selectedEnv = pm.envManager.getEnvironmentFromId(id);
             pm.envManager.selectedEnv = selectedEnv;
@@ -3781,6 +3874,7 @@ pm.envManager = {
         });
 
         $('#environment-selector').on("click", ".environment-list-item-noenvironment", function () {
+            alert("boom");
             pm.envManager.selectedEnv = null;
             pm.settings.set("selectedEnvironmentId", "");
             pm.envManager.quicklook.removeEnvironmentData();
