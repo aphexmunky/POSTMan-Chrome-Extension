@@ -1048,6 +1048,10 @@ li .right {
     display: none;
 }
 
+#modal-config .modal-footer {
+    display: none;
+}
+
 #import-collection-dropzone {
     border: 2px dashed #BBB;
     -moz-border-radius: 5px;
@@ -1192,6 +1196,10 @@ li .right {
 #url-keyvaleditor-container,
 #headers-keyvaleditor-container {
     margin-bottom: 10px;
+}
+
+#config-list-help-detail {
+    display: none;
 }
 
 #environments-list-help-detail {

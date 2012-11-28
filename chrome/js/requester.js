@@ -360,6 +360,12 @@ pm.keymap = {
             });
         });
 
+        $(document).bind('keydown', 'c', function () {
+            $('#modal-config').modal({
+                keyboard:true,
+                backdrop:"static"
+            });
+        });
 
         $(document).bind('keydown', 'h', function () {
             pm.request.openHeaderEditor();
@@ -3768,6 +3774,29 @@ pm.configManager = {
             $('#collection-config-selector .collection-config-list-item-selected').html("No environment");
         });
 
+        $('#config-list-help-toggle').on("click", function () {
+            var d = $('#config-list-help-detail').css("display");
+            if (d === "none") {
+                $('#config-list-help-detail').css("display", "inline");
+                $(this).html("Hide");
+            }
+            else {
+                $('#config-list-help-detail').css("display", "none");
+                $(this).html("Tell me more");
+            }
+        });
+
+        $('#config-editor').css("display", "none");
+        $('#config-importer').css("display", "none");
+    },
+
+    showSelector:function () {
+        $('#config-list-wrapper').css("display", "block");
+        $('#config-editor').css("display", "none");
+        $('#config-importer').css("display", "none");
+        $('#globals-editor').css("display", "none");
+        $('.config-actions-add-submit').css("display", "inline");
+        $('#modal-config .modal-footer').css("display", "none");
     },
 
     getAllConfigs:function() {
