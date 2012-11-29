@@ -3774,6 +3774,13 @@ pm.configManager = {
             $('#collection-config-selector .collection-config-list-item-selected').html("No environment");
         });
 
+
+        $('.config-actions-add-back').on("click", function () {
+            pm.configManager.showSelector();
+            $('#config-editor-name').val("");
+            $('#config-keyvaleditor').keyvalueeditor('reset', []);
+        });
+
         $('#config-list-help-toggle').on("click", function () {
             var d = $('#config-list-help-detail').css("display");
             if (d === "none") {
@@ -3786,6 +3793,18 @@ pm.configManager = {
             }
         });
 
+        $('.config-actions-add').on("click", function () {
+            console.log("clicked add button");
+            pm.configManager.showEditor();
+        });
+
+        var params = {
+            placeHolderKey:"Key",
+            placeHolderValue:"Value",
+            deleteButton:'<img class="deleteButton" src="img/delete.png">'
+        };
+
+        $('#config-keyvaleditor').keyvalueeditor('init', params);
         $('#config-editor').css("display", "none");
         $('#config-importer').css("display", "none");
     },
@@ -3794,9 +3813,27 @@ pm.configManager = {
         $('#config-list-wrapper').css("display", "block");
         $('#config-editor').css("display", "none");
         $('#config-importer').css("display", "none");
-        $('#globals-editor').css("display", "none");
         $('.config-actions-add-submit').css("display", "inline");
         $('#modal-config .modal-footer').css("display", "none");
+    },
+
+
+    showEditor:function (id) {
+        console.log("the id is: " + id);
+        if (id) {
+            // TODO: var environment = pm.envManager.getEnvironmentFromId(id);
+            $('#config-editor-name').val(config.name);
+            $('#config-editor-id').val(id);
+            $('#config-keyvaleditor').keyvalueeditor('reset', config.values);
+        }
+        else {
+            $('#config-editor-id').val(0);
+        }
+
+        $('#config-list-wrapper').css("display", "none");
+        $('#config-editor').css("display", "block");
+        $('#globals-editor').css("display", "none");
+        $('#modal-config .modal-footer').css("display", "block");
     },
 
     getAllConfigs:function() {
