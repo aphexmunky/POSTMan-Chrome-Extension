@@ -3893,7 +3893,6 @@ pm.envManager = {
         });
 
         $('#environment-selector').on("click", ".environment-list-item", function () {
-            alert("oooh");
             var id = $(this).attr('data-id');
             var selectedEnv = pm.envManager.getEnvironmentFromId(id);
             pm.envManager.selectedEnv = selectedEnv;
@@ -3903,7 +3902,6 @@ pm.envManager = {
         });
 
         $('#environment-selector').on("click", ".environment-list-item-noenvironment", function () {
-            alert("boom");
             pm.envManager.selectedEnv = null;
             pm.settings.set("selectedEnvironmentId", "");
             pm.envManager.quicklook.removeEnvironmentData();
