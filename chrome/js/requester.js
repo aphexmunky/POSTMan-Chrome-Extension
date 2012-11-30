@@ -507,6 +507,7 @@ pm.settings = {
         pm.settings.create("historyCount", 100);
         pm.settings.create("autoSaveRequest", true);
         pm.settings.create("selectedEnvironmentId", true);
+        pm.settings.create("selectedConfigId", true);
         pm.settings.create("lineWrapping", true);
         pm.settings.create("previewType", "parsed");
         pm.settings.create("retainLinkHeaders", false);
@@ -3801,8 +3802,8 @@ pm.configManager = {
             var id = $(this).attr('data-id');
             var selectedConfig = pm.configManager.getConfigFromId(id);
             pm.configManager.selectedConfig = selectedConfig;
+            pm.settings.set("selectedConfigId", selectedConfig.id);
             /* TODO:
-            pm.settings.set("selectedEnvironmentId", selectedEnv.id);
             pm.envManager.quicklook.refreshEnvironment(selectedEnv);
             */
             $('#collection-config-selector .collection-config-list-item-selected').html(selectedConfig.name);
@@ -3810,7 +3811,7 @@ pm.configManager = {
 
         $('#collection-config-selector').on("click", ".config-list-item-noenvironment", function () {
             pm.envManager.selectedEnv = null;
-            pm.settings.set("selectedEnvironmentId", "");
+            pm.settings.set("selectedConfigId", "");
             pm.envManager.quicklook.removeEnvironmentData();
             $('#collection-config-selector .collection-config-list-item-selected').html("No environment");
         });
@@ -3896,7 +3897,6 @@ pm.configManager = {
             timestamp:new Date().getTime()
         };
 
-        // TODO: pm.indexedDB.environments.addEnvironment(environment, function () {
         pm.indexedDB.config.addConfigCollection(configs, function () {
             pm.configManager.getAllConfigs();
             pm.configManager.showSelector();
@@ -3957,8 +3957,18 @@ pm.configManager = {
             $('#collection-config-list tbody').append(Handlebars.templates.config_list({"items":configs}));
             $('#collection-config-selector .dropdown-menu').append(Handlebars.templates.config_selector_actions());
 
-            pm.envManager.selectedEnv = null;
-            $('#collection-config-selector .collection-config-list-item-selected').html("No confiig");
+            var selectedConfigId = pm.settings.get("selectedConfigId");
+            var selectedConfig = pm.configManager.getConfigFromId(selectedConfigId);
+            if (selectedConfig) {
+                pm.configManager.selectedConfig = selectedConfig;
+                // TODO: fix quicklook
+                // pm.configManager.quicklook.refreshEnvironment(selectedEnv);
+                $('#collection-config-selector .collection-config-list-item-selected').html(selectedConfig.name);
+            }
+            else {
+                pm.configManager.selectedConfig = null;
+                $('#collection-config-selector .collection-config-list-item-selected').html("No config");
+            }
         })
     }
 }
