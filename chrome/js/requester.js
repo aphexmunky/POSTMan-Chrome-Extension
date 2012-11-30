@@ -129,6 +129,7 @@ window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileS
  envManager - Environments to customize requests using variables.
  filesystem - Loading and saving files from the local filesystem.
  indexedDB - Backend database. Right now Postman uses indexedDB.
+ configManager - Customize requests like environments but scope limited to a specific collection
 
  Plugins
 
