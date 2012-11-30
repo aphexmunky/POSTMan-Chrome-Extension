@@ -3787,7 +3787,7 @@ pm.indexedDB = {
 };
 
 pm.configManager = {
-    configs:["first"],
+    configs:[],
     selectedConfig:null,
     selectedConfigId:"",
 
@@ -3812,8 +3812,8 @@ pm.configManager = {
         $('#collection-config-selector').on("click", ".config-list-item-noenvironment", function () {
             pm.envManager.selectedEnv = null;
             pm.settings.set("selectedConfigId", "");
-            pm.envManager.quicklook.removeEnvironmentData();
-            $('#collection-config-selector .collection-config-list-item-selected').html("No environment");
+            //pm.envManager.quicklook.removeEnvironmentData();
+            $('#collection-config-selector .collection-config-list-item-selected').html("No config");
         });
 
 
