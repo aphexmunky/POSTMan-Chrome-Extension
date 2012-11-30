@@ -3195,6 +3195,12 @@ pm.indexedDB = {
                         environmentsStore.createIndex("id", "id", { unique:false});
                     }
 
+                    if (!db.objectStoreNames.contains("config")) {
+                        var configStore = db.createObjectStore("config", {keyPath:"id"});
+                        configStore.createIndex("timestamp", "timestamp", { unique:false});
+                        configStore.createIndex("id", "id", { unique:false});
+                    }
+
                     var transaction = event.target.result;
                     transaction.oncomplete = function () {
                         pm.history.getAllRequests();
@@ -3245,13 +3251,13 @@ pm.indexedDB = {
                 environmentsStore.createIndex("id", "id", { unique:false});
             }
 
-            /* TODO:
+            /* TODO: */
             if (!db.objectStoreNames.contains("config")) {
-                var environmentsStore = db.createObjectStore("config", {keyPath:"id"});
-                environmentsStore.createIndex("timestamp", "timestamp", { unique:false});
-                environmentsStore.createIndex("id", "id", { unique:false});
+                var configStore = db.createObjectStore("config", {keyPath:"id"});
+                configStore.createIndex("timestamp", "timestamp", { unique:false});
+                configStore.createIndex("id", "id", { unique:false});
             }
-            */
+            /**/
         };
 
         request.onsuccess = function (e) {
@@ -3614,14 +3620,46 @@ pm.indexedDB = {
 
     // TODO: indexDB config
     config:{
+        addConfigCollection:function (config, callback) {
+            var db = pm.indexedDB.db;
+            var trans = db.transaction(["config"], "readwrite");
+            var store = trans.objectStore("config");
+            var request = store.put(config);
+
+            request.onsuccess = function (e) {
+                callback(config);
+            };
+
+            request.onerror = function (e) {
+                console.log(e);
+            };
+        },
+
+        updateEnvironment:function (config, callback) {
+            var db = pm.indexedDB.db;
+            var trans = db.transaction(["config"], "readwrite");
+            var store = trans.objectStore("config");
+
+            var boundKeyRange = IDBKeyRange.only(config.id);
+            var request = store.put(config);
+
+            request.onsuccess = function (e) {
+                callback(config);
+            };
+
+            request.onerror = function (e) {
+                console.log(e.value);
+            };
+        },
+
         getAllConfigs:function (callback) {
             var db = pm.indexedDB.db;
             if (db == null) {
                 return;
             }
 
-            var trans = db.transaction(["environments"], "readwrite");
-            var store = trans.objectStore("environments");
+            var trans = db.transaction(["config"], "readwrite");
+            var store = trans.objectStore("config");
 
             //Get everything in the store
             var keyRange = IDBKeyRange.lowerBound(0);
@@ -3645,8 +3683,7 @@ pm.indexedDB = {
             };
 
             cursorRequest.onerror = pm.indexedDB.onerror;
-        },
-
+        }
     },
 
     environments:{
@@ -3750,6 +3787,8 @@ pm.indexedDB = {
 
 pm.configManager = {
     configs:["first"],
+    selectedConfig:null,
+    selectedConfigId:"",
 
     init:function() {
         $('#config-list').on("click", ".config-action-delete", function () {
@@ -3760,11 +3799,13 @@ pm.configManager = {
 
         $('#collection-config-selector').on("click", ".config-list-item", function () {
             var id = $(this).attr('data-id');
-            var selectedEnv = pm.envManager.getEnvironmentFromId(id);
-            pm.envManager.selectedEnv = selectedEnv;
+            var selectedConfig = pm.configManager.getConfigFromId(id);
+            pm.configManager.selectedConfig = selectedConfig;
+            /* TODO:
             pm.settings.set("selectedEnvironmentId", selectedEnv.id);
             pm.envManager.quicklook.refreshEnvironment(selectedEnv);
-            $('#collection-config-selector .config-list-item-selected').html(selectedEnv.name);
+            */
+            $('#collection-config-selector .collection-config-list-item-selected').html(selectedConfig.name);
         });
 
         $('#collection-config-selector').on("click", ".config-list-item-noenvironment", function () {
@@ -3798,6 +3839,21 @@ pm.configManager = {
             pm.configManager.showEditor();
         });
 
+
+        $('.config-actions-add-submit').on("click", function () {
+            var id = $('#config-editor-id').val();
+            if (id === "0") {
+                pm.configManager.addConfigCollection();
+            }
+            else {
+                pm.configManager.updateConfigCollection();
+            }
+
+            $('#config-editor-name').val("");
+            $('#config-keyvaleditor').keyvalueeditor('reset', []);
+
+        });
+
         var params = {
             placeHolderKey:"Key",
             placeHolderValue:"Value",
@@ -3809,12 +3865,66 @@ pm.configManager = {
         $('#config-importer').css("display", "none");
     },
 
+    getConfigFromId:function (id) {
+        var configs = pm.configManager.configs;
+        var count = configs.length;
+        for (var i = 0; i < count; i++) {
+            var conf = configs[i];
+            if (id === conf.id) {
+                return conf;
+            }
+        }
+
+        return false;
+    },
+
     showSelector:function () {
         $('#config-list-wrapper').css("display", "block");
         $('#config-editor').css("display", "none");
         $('#config-importer').css("display", "none");
         $('.config-actions-add-submit').css("display", "inline");
         $('#modal-config .modal-footer').css("display", "none");
+    },
+
+    addConfigCollection:function () {
+        var name = $('#config-editor-name').val();
+        var values = $('#config-keyvaleditor').keyvalueeditor('getValues');
+        var configs = {
+            id:guid(),
+            name:name,
+            values:values,
+            timestamp:new Date().getTime()
+        };
+
+        // TODO: pm.indexedDB.environments.addEnvironment(environment, function () {
+        pm.indexedDB.config.addConfigCollection(configs, function () {
+            pm.configManager.getAllConfigs();
+            pm.configManager.showSelector();
+        });
+    },
+
+    updateConfigCollection:function () {
+        var id = $('#config-editor-id').val();
+        var name = $('#config-editor-name').val();
+        var values = $('#config-keyvaleditor').keyvalueeditor('getValues');
+        var configs = {
+            id:id,
+            name:name,
+            values:values,
+            timestamp:new Date().getTime()
+        };
+
+        pm.indexedDB.config.updateConfigCollection(configs, function () {
+            pm.configManager.getAllConfigs();
+            pm.configManager.showSelector();
+        });
+    },
+
+    deleteEnvironment:function (id) {
+        pm.indexedDB.environments.deleteEnvironment(id, function () {
+            pm.envManager.getAllEnvironments();
+            pm.envManager.showSelector();
+        });
     },
 
 
