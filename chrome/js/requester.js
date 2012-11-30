@@ -3792,6 +3792,8 @@ pm.configManager = {
     selectedConfigId:"",
 
     init:function() {
+        $('#config-list').append(Handlebars.templates.environment_list({"items":this.configs}));
+
         $('#config-list').on("click", ".config-action-delete", function () {
             var id = $(this).attr('data-id');
             $('a[rel="tooltip"]').tooltip('hide');
@@ -3931,7 +3933,7 @@ pm.configManager = {
     showEditor:function (id) {
         console.log("the id is: " + id);
         if (id) {
-            // TODO: var environment = pm.envManager.getEnvironmentFromId(id);
+            var config = pm.configManager.getConfigFromId(id);
             $('#config-editor-name').val(config.name);
             $('#config-editor-id').val(id);
             $('#config-keyvaleditor').keyvalueeditor('reset', config.values);
@@ -3954,7 +3956,7 @@ pm.configManager = {
 
 
             $('#collection-config-selector .dropdown-menu').append(Handlebars.templates.config_selector({"items":configs}));
-            $('#collection-config-list tbody').append(Handlebars.templates.config_list({"items":configs}));
+            $('#config-list tbody').append(Handlebars.templates.config_list({"items":configs}));
             $('#collection-config-selector .dropdown-menu').append(Handlebars.templates.config_selector_actions());
 
             var selectedConfigId = pm.settings.get("selectedConfigId");
