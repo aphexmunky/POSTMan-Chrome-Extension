@@ -3817,6 +3817,11 @@ pm.configManager = {
             pm.configManager.deleteConfig(id);
         });
 
+        $('#config-list').on("click", ".config-action-edit", function () {
+            var id = $(this).attr('data-id');
+            pm.configManager.showEditor(id);
+        });
+
         $('#collection-config-selector').on("click", ".config-list-item", function () {
             var id = $(this).attr('data-id');
             var selectedConfig = pm.configManager.getConfigFromId(id);
