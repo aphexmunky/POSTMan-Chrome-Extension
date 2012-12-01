@@ -3637,7 +3637,7 @@ pm.indexedDB = {
             };
         },
 
-        updateEnvironment:function (config, callback) {
+        updateConfigCollection:function (config, callback) {
             var db = pm.indexedDB.db;
             var trans = db.transaction(["config"], "readwrite");
             var store = trans.objectStore("config");
@@ -3651,6 +3651,22 @@ pm.indexedDB = {
 
             request.onerror = function (e) {
                 console.log(e.value);
+            };
+        },
+
+        deleteConfig:function (id, callback) {
+            var db = pm.indexedDB.db;
+            var trans = db.transaction(["config"], "readwrite");
+            var store = trans.objectStore(["config"]);
+
+            var request = store['delete'](id);
+
+            request.onsuccess = function () {
+                callback(id);
+            };
+
+            request.onerror = function (e) {
+                console.log(e);
             };
         },
 
@@ -3798,7 +3814,7 @@ pm.configManager = {
         $('#config-list').on("click", ".config-action-delete", function () {
             var id = $(this).attr('data-id');
             $('a[rel="tooltip"]').tooltip('hide');
-            pm.configManager.deleteEnvironment(id);
+            pm.configManager.deleteConfig(id);
         });
 
         $('#collection-config-selector').on("click", ".config-list-item", function () {
@@ -3819,7 +3835,6 @@ pm.configManager = {
             $('#collection-config-selector .collection-config-list-item-selected').html("No config");
         });
 
-
         $('.config-actions-add-back').on("click", function () {
             pm.configManager.showSelector();
             $('#config-editor-name').val("");
@@ -3839,10 +3854,8 @@ pm.configManager = {
         });
 
         $('.config-actions-add').on("click", function () {
-            console.log("clicked add button");
             pm.configManager.showEditor();
         });
-
 
         $('.config-actions-add-submit').on("click", function () {
             var id = $('#config-editor-id').val();
@@ -3923,16 +3936,15 @@ pm.configManager = {
         });
     },
 
-    deleteEnvironment:function (id) {
-        pm.indexedDB.environments.deleteEnvironment(id, function () {
-            pm.envManager.getAllEnvironments();
-            pm.envManager.showSelector();
+    deleteConfig:function (id) {
+        pm.indexedDB.config.deleteConfig(id, function () {
+            pm.configManager.getAllConfigs();
+            pm.configManager.showSelector();
         });
     },
 
 
     showEditor:function (id) {
-        console.log("the id is: " + id);
         if (id) {
             var config = pm.configManager.getConfigFromId(id);
             $('#config-editor-name').val(config.name);
@@ -3952,7 +3964,7 @@ pm.configManager = {
     getAllConfigs:function() {
         pm.indexedDB.config.getAllConfigs(function (configs) {
             $('#collection-config-selector .dropdown-menu').html("");
-            $('#collection-config-list tbody').html("");
+            $('#config-list tbody').html("");
             pm.configManager.configs = configs;
 
 
