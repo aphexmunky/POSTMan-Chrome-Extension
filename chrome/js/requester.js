@@ -1807,7 +1807,16 @@ pm.request = {
             envValues = environment.values;
         }
 
+        var configManager = pm.configManager;
+        var config = configManager.selectedConfig;
+        var confValues = [];
+
+        if (config !== null) {
+            confValues = config.values;
+        }
+
         url = envManager.processString(url, envValues);
+        url = envManager.processString(url, confValues);
         url = ensureProperUrl(url);
 
         pm.request.url = url;
