@@ -2346,6 +2346,7 @@ pm.history = {
 
 pm.collections = {
     areLoaded:false,
+    selectedCollection:null,
     items:[],
 
     init:function () {
@@ -2574,6 +2575,7 @@ pm.collections = {
 
     getCollectionRequest:function (id) {
         pm.indexedDB.getCollectionRequest(id, function (request) {
+            pm.collections.selectedCollection = request.collectionId;
             pm.request.isFromCollection = true;
             pm.request.collectionRequestId = id;
             pm.request.loadRequestInEditor(request, true);
