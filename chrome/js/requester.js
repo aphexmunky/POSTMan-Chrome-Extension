@@ -2576,6 +2576,7 @@ pm.collections = {
     getCollectionRequest:function (id) {
         pm.indexedDB.getCollectionRequest(id, function (request) {
             pm.collections.selectedCollection = request.collectionId;
+            pm.indexedDB.config.getAllConfigsForCollection(request.collectionId, function(e) {console.log(e);});
             pm.request.isFromCollection = true;
             pm.request.collectionRequestId = id;
             pm.request.loadRequestInEditor(request, true);
@@ -3681,6 +3682,41 @@ pm.indexedDB = {
             };
         },
 
+        getAllConfigsForCollection:function (id, callback) {
+            var db = pm.indexedDB.db;
+            if (db == null) {
+                return;
+            }
+
+            var trans = db.transaction(["config"], "readwrite");
+            var store = trans.objectStore("config");
+
+            //Get everything in the store
+            var keyRange = IDBKeyRange.lowerBound(0);
+            var index = store.index("timestamp");
+            var cursorRequest = index.openCursor(keyRange);
+            var configs = [];
+
+            cursorRequest.onsuccess = function (e) {
+                var result = e.target.result;
+
+                if (!result) {
+                    callback(configs);
+                    return;
+                }
+
+                var request = result.value;
+                if (request.collection == id) {
+                    configs.push(request);
+                }
+
+                //This wil call onsuccess again and again until no more request is left
+                result['continue']();
+            };
+
+            cursorRequest.onerror = pm.indexedDB.onerror;
+        },
+
         getAllConfigs:function (callback) {
             var db = pm.indexedDB.db;
             if (db == null) {
@@ -3922,11 +3958,13 @@ pm.configManager = {
     addConfigCollection:function () {
         var name = $('#config-editor-name').val();
         var values = $('#config-keyvaleditor').keyvalueeditor('getValues');
+        var selectedCollection = pm.collections.selectedCollection;
         var configs = {
             id:guid(),
             name:name,
             values:values,
-            timestamp:new Date().getTime()
+            timestamp:new Date().getTime(),
+            collection:selectedCollection
         };
 
         pm.indexedDB.config.addConfigCollection(configs, function () {
@@ -3939,15 +3977,17 @@ pm.configManager = {
         var id = $('#config-editor-id').val();
         var name = $('#config-editor-name').val();
         var values = $('#config-keyvaleditor').keyvalueeditor('getValues');
+        var selectedCollection = pm.collections.selectedCollection;
         var configs = {
             id:id,
             name:name,
             values:values,
-            timestamp:new Date().getTime()
+            timestamp:new Date().getTime(),
+            collection:selectedCollection
         };
 
         pm.indexedDB.config.updateConfigCollection(configs, function () {
-            pm.configManager.getAllConfigs();
+            pm.configManager.getAllConfigsForCollection();
             pm.configManager.showSelector();
         });
     },
@@ -3990,6 +4030,7 @@ pm.configManager = {
 
             var selectedConfigId = pm.settings.get("selectedConfigId");
             var selectedConfig = pm.configManager.getConfigFromId(selectedConfigId);
+
             if (selectedConfig) {
                 pm.configManager.selectedConfig = selectedConfig;
                 // TODO: fix quicklook
