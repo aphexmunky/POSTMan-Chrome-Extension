@@ -2382,6 +2382,7 @@ pm.collections = {
         $('#collection-items').on("click", ".request-actions-load", function () {
             var id = $(this).attr('data-id');
             pm.collections.getCollectionRequest(id);
+            pm.configManager.updateConfigCollection();
         });
 
         $('#collection-items').on("click", ".request-actions-edit", function () {
@@ -2576,7 +2577,6 @@ pm.collections = {
     getCollectionRequest:function (id) {
         pm.indexedDB.getCollectionRequest(id, function (request) {
             pm.collections.selectedCollection = request.collectionId;
-            pm.indexedDB.config.getAllConfigsForCollection(request.collectionId, function(e) {console.log(e);});
             pm.request.isFromCollection = true;
             pm.request.collectionRequestId = id;
             pm.request.loadRequestInEditor(request, true);
@@ -3278,7 +3278,7 @@ pm.indexedDB = {
             console.log("Success");
             pm.indexedDB.db = e.target.result;
             pm.history.getAllRequests();
-            pm.configManager.getAllConfigs();
+            pm.configManager.getAllConfigsForCollection();
             pm.envManager.getAllEnvironments();
         };
 
@@ -3706,7 +3706,7 @@ pm.indexedDB = {
                 }
 
                 var request = result.value;
-                if (request.collection == id) {
+                if (id != null && request.collection == id) {
                     configs.push(request);
                 }
 
@@ -3968,7 +3968,7 @@ pm.configManager = {
         };
 
         pm.indexedDB.config.addConfigCollection(configs, function () {
-            pm.configManager.getAllConfigs();
+            pm.configManager.getAllConfigsForCollection();
             pm.configManager.showSelector();
         });
     },
@@ -3994,7 +3994,7 @@ pm.configManager = {
 
     deleteConfig:function (id) {
         pm.indexedDB.config.deleteConfig(id, function () {
-            pm.configManager.getAllConfigs();
+            pm.configManager.getAllConfigsForCollection();
             pm.configManager.showSelector();
         });
     },
@@ -4017,8 +4017,8 @@ pm.configManager = {
         $('#modal-config .modal-footer').css("display", "block");
     },
 
-    getAllConfigs:function() {
-        pm.indexedDB.config.getAllConfigs(function (configs) {
+    getAllConfigsForCollection:function() {
+        pm.indexedDB.config.getAllConfigsForCollection(pm.collections.selectedCollection, function (configs) {
             $('#collection-config-selector .dropdown-menu').html("");
             $('#config-list tbody').html("");
             pm.configManager.configs = configs;
