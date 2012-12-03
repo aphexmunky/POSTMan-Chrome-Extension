@@ -4019,6 +4019,11 @@ pm.configManager = {
 
     getAllConfigsForCollection:function() {
         pm.indexedDB.config.getAllConfigsForCollection(pm.collections.selectedCollection, function (configs) {
+            if (configs.length > 0) {
+                $('#collection-config-selector').css("display", "block");
+            } else {
+                $('#collection-config-selector').css("display", "none");
+            }
             $('#collection-config-selector .dropdown-menu').html("");
             $('#config-list tbody').html("");
             pm.configManager.configs = configs;
