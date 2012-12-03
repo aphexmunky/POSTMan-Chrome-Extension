@@ -3706,7 +3706,7 @@ pm.indexedDB = {
                 }
 
                 var request = result.value;
-                if (id != null && request.collection == id) {
+                if (id != null && request.collection == id && request.id != "0") {
                     configs.push(request);
                 }
 
