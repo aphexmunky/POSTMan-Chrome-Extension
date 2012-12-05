@@ -3892,6 +3892,10 @@ pm.configManager = {
             $('#collection-config-selector .collection-config-list-item-selected').html("No config");
         });
 
+        $('.config-actions-import').on('click', function () {
+            pm.configManager.showImporter();
+        });
+
         $('.config-actions-add-back').on("click", function () {
             pm.configManager.showSelector();
             $('#config-editor-name').val("");
@@ -4032,6 +4036,15 @@ pm.configManager = {
         $('#config-list-wrapper').css("display", "none");
         $('#config-editor').css("display", "block");
         $('#globals-editor').css("display", "none");
+        $('#modal-config .modal-footer').css("display", "block");
+    },
+
+    showImporter:function () {
+        $('#config-list-wrapper').css("display", "none");
+        $('#config-editor').css("display", "none");
+        $('#globals-editor').css("display", "none");
+        $('#config-importer').css("display", "block");
+        $('.config-actions-add-submit').css("display", "none");
         $('#modal-config .modal-footer').css("display", "block");
     },
 
