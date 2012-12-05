@@ -3869,6 +3869,11 @@ pm.configManager = {
             pm.configManager.showEditor(id);
         });
 
+        $('#config-list').on("click", ".config-action-download", function () {
+            var id = $(this).attr('data-id');
+            pm.configManager.downloadConfig(id);
+        });
+
         $('#collection-config-selector').on("click", ".config-list-item", function () {
             var id = $(this).attr('data-id');
             var selectedConfig = pm.configManager.getConfigFromId(id);
@@ -3999,6 +4004,19 @@ pm.configManager = {
         });
     },
 
+    downloadConfig:function (id) {
+        var conf = null;
+        for (var i = 0; i < pm.configManager.configs.length; i++) {
+            if (pm.configManager.configs[i].id == id) {
+                conf = pm.configManager.configs[i];
+            }
+        };
+        var name = conf.name + "-config.json";
+        var type = "application/json";
+        var filedata = JSON.stringify(conf);
+        pm.filesystem.saveAndOpenFile(name, filedata, type, function () {
+        });
+    },
 
     showEditor:function (id) {
         if (id) {
