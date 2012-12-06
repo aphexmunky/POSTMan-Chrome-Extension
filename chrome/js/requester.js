@@ -4106,7 +4106,7 @@ pm.configManager = {
                             action:'added'
                         };
 
-                        $('#config-importer-confirmations').append(Handlebars.templates.message_environment_added(o));
+                        $('#config-importer-confirmations').append(Handlebars.templates.message_config_added(o));
                         pm.configManager.getAllConfigsForCollection();
                     });
                 };
