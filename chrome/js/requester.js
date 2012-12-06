@@ -3918,6 +3918,12 @@ pm.configManager = {
             pm.configManager.showEditor();
         });
 
+        $('#config-files-input').on('change', function (event) {
+            var files = event.target.files;
+            pm.configManager.importConfigs(files);
+            $('#config-files-input').val("");
+        });
+
         $('.config-actions-add-submit').on("click", function () {
             var id = $('#config-editor-id').val();
             if (id === "0") {
@@ -4078,7 +4084,39 @@ pm.configManager = {
                 $('#collection-config-selector .collection-config-list-item-selected').html("No config");
             }
         })
+    },
+
+    importConfigs:function (files) {
+        debugger;
+        // Loop through the FileList
+        for (var i = 0, f; f = files[i]; i++) {
+            var reader = new FileReader();
+
+            // Closure to capture the file information.
+            reader.onload = (function (theFile) {
+                return function (e) {
+                    // Render thumbnail.
+                    var data = e.currentTarget.result;
+                    var conf = JSON.parse(data);
+
+                    pm.indexedDB.config.addConfigCollection(conf, function () {
+                        //Add confirmation
+                        var o = {
+                            name:conf.name,
+                            action:'added'
+                        };
+
+                        $('#config-importer-confirmations').append(Handlebars.templates.message_environment_added(o));
+                        pm.configManager.getAllConfigsForCollection();
+                    });
+                };
+            })(f);
+
+            // Read in the image file as a data URL.
+            reader.readAsText(f);
+        }
     }
+
 }
 
 pm.envManager = {
