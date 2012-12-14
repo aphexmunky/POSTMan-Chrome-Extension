@@ -3717,6 +3717,7 @@ pm.indexedDB = {
             cursorRequest.onerror = pm.indexedDB.onerror;
         },
 
+        // TODO: Try deleting me...
         getAllConfigs:function (callback) {
             var db = pm.indexedDB.db;
             if (db == null) {
@@ -4056,7 +4057,7 @@ pm.configManager = {
 
     getAllConfigsForCollection:function() {
         pm.indexedDB.config.getAllConfigsForCollection(pm.collections.selectedCollection, function (configs) {
-            if (configs.length > 0) {
+            if (pm.collections.selectedCollection != null && pm.collections.selectedCollection != '') {
                 $('#collection-config-selector').css("display", "block");
             } else {
                 $('#collection-config-selector').css("display", "none");
